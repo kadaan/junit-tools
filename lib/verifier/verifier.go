@@ -1,6 +1,7 @@
 package verifier
 
 import (
+	"github.com/bmatcuk/doublestar"
 	"github.com/joshdk/go-junit"
 	"github.com/kadaan/junit-tools/config"
 	"github.com/kadaan/junit-tools/lib/command"
@@ -22,14 +23,22 @@ func (v *verifier) Run(_ *config.VerifyConfig, args []string) error {
 	var errs []error
 	workingDirectory := v.getWorkingDirectory()
 	for _, arg := range args {
-		suites, err := junit.IngestFile(arg)
+		matches, err := doublestar.Glob(arg)
 		if err != nil {
 			errs = append(errs, err)
+			continue
 		}
+		for _, match := range matches {
+			suites, err := junit.IngestFile(match)
+			if err != nil {
+				errs = append(errs, err)
+				continue
+			}
 
-		fileTotals := v.aggregate(suites)
-		v.log(1, v.makeRelativePath(workingDirectory, arg), fileTotals)
-		totals = v.add(totals, fileTotals)
+			fileTotals := v.aggregate(suites)
+			v.log(1, v.makeRelativePath(workingDirectory, match), fileTotals)
+			totals = v.add(totals, fileTotals)
+		}
 	}
 	v.log(0, "JUnit Results", totals)
 	if totals.Failed+totals.Error > 0 {
@@ -85,13 +94,15 @@ func (v *verifier) aggregate(suites []junit.Suite) *junit.Totals {
 		Error:    0,
 		Duration: 0,
 	}
-	for _, suite := range suites {
-		result.Tests += suite.Totals.Tests
-		result.Duration += suite.Totals.Duration
-		result.Passed += suite.Totals.Passed
-		result.Skipped += suite.Totals.Skipped
-		result.Failed += suite.Totals.Failed
-		result.Error += suite.Totals.Error
+	if suites != nil {
+		for _, suite := range suites {
+			result.Tests += suite.Totals.Tests
+			result.Duration += suite.Totals.Duration
+			result.Passed += suite.Totals.Passed
+			result.Skipped += suite.Totals.Skipped
+			result.Failed += suite.Totals.Failed
+			result.Error += suite.Totals.Error
+		}
 	}
 	return result
 }

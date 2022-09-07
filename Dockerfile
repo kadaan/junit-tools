@@ -37,8 +37,9 @@ FROM base as linux
 RUN GOOS=linux GARCH=amd64 go build \
             -o /dist/junit-tools \
             -a \
-            -ldflags "-s -w -X github.com/kadaan/junit-tools/version.Version=$VERSION -X github.com/kadaan/junit-tools/version.Revision=$REVISION -X github.com/kadaan/junit-tools/version.Branch=$BRANCH -X github.com/kadaan/junit-tools/version.BuildUser=$USER -X github.com/kadaan/junit-tools/version.BuildHost=$HOST -X github.com/kadaan/junit-tools/version.BuildDate=$BUILD_DATE" \
-            -tags 'osusergo static_build' && \
+            -ldflags "-d -s -w -extldflags \"-fno-PIC -static\" -X github.com/kadaan/junit-tools/version.Version=$VERSION -X github.com/kadaan/junit-tools/version.Revision=$REVISION -X github.com/kadaan/junit-tools/version.Branch=$BRANCH -X github.com/kadaan/junit-tools/version.BuildUser=$USER -X github.com/kadaan/junit-tools/version.BuildHost=$HOST -X github.com/kadaan/junit-tools/version.BuildDate=$BUILD_DATE" \
+            -tags 'osusergo netgo static_build' \
+            -installsuffix netgo && \
     tar -czf "/archives/junit_tools_linux.tar.gz" -C "/dist" .
 
 FROM scratch as artifact
