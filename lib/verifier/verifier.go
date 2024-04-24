@@ -19,7 +19,7 @@ type verifier struct {
 }
 
 func (v *verifier) Run(_ *config.VerifyConfig, args []string) error {
-	var totals *junit.Totals
+	var totals = &junit.Totals{}
 	var errs []error
 	workingDirectory := v.getWorkingDirectory()
 	for _, arg := range args {

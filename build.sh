@@ -97,14 +97,6 @@ function run() {
     fatal "docker is not installed or docker daemon is not running"
   fi
 
-  if ! docker info -f "{{json .}}" | jq -re '.ClientInfo.Plugins[] | select(.Name=="buildx")' > /dev/null 2>&1; then
-    fatal "docker cli experimental mode is not enabled.  See https://docs.docker.com/buildx/working-with-buildx/ for instructions."
-  fi
-
-  if ! docker info -f "{{json .}}" | jq -re '.ExperimentalBuild' > /dev/null 2>&1; then
-    fatal "docker experimental mode is not enabled.  See https://docs.docker.com/buildx/working-with-buildx/ for instructions."
-  fi
-
   build "$@"
 
   return $?
